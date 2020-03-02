@@ -40,7 +40,7 @@ class User:
         self.message = collections.deque(range(5), maxlen=5)
 
 
-def is_standard_call(function):
+def add_call_history(function):
     def standard(call):
         try:
             chat_id = call.message.chat.id
@@ -53,6 +53,7 @@ def is_standard_call(function):
                 user = User(name)
                 user.message.append(text)
                 user_dict[chat_id] = user
+            print(user.message)
             return function(call)
         except AttributeError:
             return function(call)
@@ -106,6 +107,7 @@ def is_standard(function):
             else:
                 return function(message)
             audio.close()
+            print(user.message)
         except AttributeError:
             return function(message)
 
@@ -251,45 +253,52 @@ def del_title_in_list(message):
         print(traceback.format_exc())
 
 
-@is_standard
-def name_set_title(message):
+@add_call_history
+def name_set_title(call):
     try:
-        user = user_dict[message.chat.id]
-        if message.text in k.get_persons():
+        user = user_dict[call.message.chat.id]
+        if call.data in k.get_persons():
             if user.message[-2] == "Надати титул персоні":
-                msg = bot.reply_to(message, "Оберіть титул, або введіть новий",
-                                   reply_markup=markups.get_titles_markup())
+                msg = bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                            text="Оберіть титул, або введіть новий",
+                                            reply_markup=markups.get_titles_markup())
                 bot.register_next_step_handler(msg, set_title)
             elif user.message[-2] == "Вилучити титул в недостойного":
-                msg = bot.reply_to(message, "Оберіть титул",
-                                   reply_markup=markups.get_person_titles_markup(message.text))
+                msg = bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                            text="Оберіть титул",
+                                            reply_markup=markups.get_person_titles_markup(call.data))
                 bot.register_next_step_handler(msg, del_person_title)
             elif user.message[-2] == "Змінити званя члена ордену":
-                msg = bot.reply_to(message, "Оберіть звання, або введіть нове",
-                                   reply_markup=markups.get_titles_markup())
+                msg = bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                            text="Оберіть звання, або введіть нове",
+                                            reply_markup=markups.get_titles_markup())
                 bot.register_next_step_handler(msg, up_rank)
             elif user.message[-2] == "Наповнити довгий ящик":
-                msg = bot.reply_to(message,
-                                   "Оберіть тему, або введіть нову",
-                                   reply_markup=markups.get_person_long_drawer_markup(message.text))
+                msg = bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                            text="Оберіть тему, або введіть нову",
+                                            reply_markup=markups.get_person_long_drawer_markup(call.data))
                 bot.register_next_step_handler(msg, long_drawer)
             elif user.message[-2] == "Показати засекречений матеріал":
-                msg = bot.reply_to(message,
-                                   "Копай глибше",
-                                   reply_markup=markups.get_person_long_drawer_markup(message.text))
+                msg = bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                            text="Копай глибше",
+                                            reply_markup=markups.get_person_long_drawer_markup(call.data))
                 bot.register_next_step_handler(msg, show_long_drawer)
             elif user.message[-2] == "Видалити давнішню єресть":
-                msg = bot.reply_to(message,
-                                   "Оберіть тему",
-                                   reply_markup=markups.get_person_long_drawer_markup(message.text))
+                msg = bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                            text="Оберіть тему",
+                                            reply_markup=markups.get_person_long_drawer_markup(call.data))
                 bot.register_next_step_handler(msg, long_drawer)
         else:
-            msg = bot.reply_to(message, "Оберіть ім'я цього посвяченого",
-                               reply_markup=markups.get_persons_markup())
+            msg = bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                        text="Оберіть ім'я цього посвяченого",
+                                        reply_markup=markups.get_persons_markup())
             bot.register_next_step_handler(msg, name_set_title)
+        return call
     except Exception:
         print(traceback.format_exc())
-        bot.reply_to(message, "oooops")
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                              text="oooops")
+        return call
 
 
 @is_standard
@@ -302,23 +311,40 @@ def new_title(message):
         bot.reply_to(message, "oooops")
 
 
-@is_standard
-def set_title(message):
+@bot.callback_query_handler(func=lambda call: call.data in k.get_persons() and user_dict[call.message.chat.id].message[
+    -1] == "Надати титул персоні")
+@add_call_history
+def pre_set_title(call):
+    bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                          text="Оберіть титул",
+                          reply_markup=markups.get_titles_markup())
+
+
+@bot.callback_query_handler(
+    func=lambda call: call.data in k.get_titles() and user_dict[call.message.chat.id].message[
+        -2] == "Надати титул персоні")
+@add_call_history
+def set_title(call):
+    print("here", call)
     try:
-        user = user_dict[message.chat.id]
+        user = user_dict[call.message.chat.id]
         if user.message[-2] in k.get_persons():
-            if k.set_person_title(user.message[-2], message.text):
-                bot.reply_to(message, "Титул успішно надано!", reply_markup=markups.titles_markup)
+            if k.set_person_title(user.message[-2], call.data):
+                bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                      text="Титул успішно надано!", reply_markup=markups.titles_markup)
             else:
-                msg = bot.reply_to(message, "Титул вже надано оберіть або введіть новий",
-                                   reply_markup=markups.get_titles_markup())
-                bot.register_next_step_handler(msg, set_title)
+                bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                      text="Титул вже надано оберіть або введіть новий",
+                                      reply_markup=markups.get_titles_markup())
+
         else:
-            if k.set_person_title(user.message[-3], message.text):
-                bot.reply_to(message, "Титул успішно надано!", reply_markup=markups.titles_markup)
+            if k.set_person_title(user.message[-3], call.data):
+                bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                      text="Титул успішно надано!", reply_markup=markups.titles_markup)
     except Exception:
         print(traceback.format_exc())
-        bot.reply_to(message, "oooops")
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                              text="oooops")
 
 
 @is_standard
@@ -343,14 +369,11 @@ def add_person(message):
         print(traceback.format_exc())
 
 
+@add_call_history
 @bot.callback_query_handler(func=lambda call: call.data in k.get_persons() and user_dict[call.message.chat.id].message[
     -1] == "Видалити еретика")
-@is_standard_call
 def del_person(call):
     try:
-        # user = user_dict[call.message.chat.id]
-        # print(user.message)
-        # print(user_dict[call.message.chat.id].message[-2] == "Видалити еретика")
         k.del_person(call.data)
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                               text="Інквізиція успішно виконала свою справу",
@@ -426,7 +449,7 @@ def del_person_long_drawer(message):
 
 
 @bot.callback_query_handler(func=lambda call: True)
-@is_standard_call
+@add_call_history
 def standard_callback_data(call):
     print(call)
     standard_CD = {
