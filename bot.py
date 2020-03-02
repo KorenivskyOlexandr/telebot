@@ -16,7 +16,7 @@ import youtube
 import telebot
 import constant
 import markups
-import urllib.request as urllib2
+# import urllib.request as urllib2
 import requests
 import json
 import traceback
@@ -40,6 +40,26 @@ class User:
         self.message = collections.deque(range(5), maxlen=5)
 
 
+def is_standard_call(function):
+    def standard(call):
+        try:
+            chat_id = call.message.chat.id
+            text = call.data
+            name = call.message.from_user.username
+            if chat_id in user_dict:
+                user = user_dict[chat_id]
+                user.message.append(text)
+            else:
+                user = User(name)
+                user.message.append(text)
+                user_dict[chat_id] = user
+            return function(call)
+        except AttributeError:
+            return function(call)
+
+    return standard
+
+
 def is_standard(function):
     def standard(message):
         try:
@@ -55,20 +75,20 @@ def is_standard(function):
                 user_dict[chat_id] = user
             audio = open("{}tamam_tamam.mp3".format(home), "rb")
             standard_messages = {
-                "члени ордену": lambda: bot.send_message(message.chat.id, "Обирай!",
-                                                         reply_markup=markups.get_members_order_markup()),
-                "титули": lambda: bot.send_message(message.chat.id, "Обирай!", reply_markup=markups.titles_markup),
-                "на головну": lambda: bot.send_message(message.chat.id, "Головну сторінку активовано",
-                                                       reply_markup=markups.main_markup),
-                "список всіх членів ордену": lambda: bot.send_message(message.chat.id,
-                                                                      ",\n".join(sorted(k.get_persons())),
-                                                                      reply_markup=markups.standard_markup),
-                "надати довідку про члена ордену": lambda: bot.send_message(message.chat.id, "Обирай!",
-                                                                            reply_markup=markups.get_persons_markup()),
-                "показати всі титули": lambda: bot.send_message(message.chat.id,
-                                                                ",\n".join(sorted(k.get_titles()))),
-                "довгий ящик": lambda: bot.send_message(message.chat.id, "Обирай!",
-                                                        reply_markup=markups.long_drawer_markup),
+                # "члени ордену": lambda: bot.send_message(message.chat.id, "Обирай!",
+                #                                          reply_markup=markups.get_members_order_markup()),
+                # "титули": lambda: bot.send_message(message.chat.id, "Обирай!", reply_markup=markups.titles_markup),
+                # "на головну": lambda: bot.send_message(message.chat.id, "Головну сторінку активовано",
+                #                                        reply_markup=markups.main_markup),
+                # "список всіх членів ордену": lambda: bot.send_message(message.chat.id,
+                #                                                       ",\n".join(sorted(k.get_persons())),
+                #                                                       reply_markup=markups.standard_markup),
+                # "надати довідку про члена ордену": lambda: bot.send_message(message.chat.id, "Обирай!",
+                #                                                             reply_markup=markups.get_persons_markup()),
+                # "показати всі титули": lambda: bot.send_message(message.chat.id,
+                #                                                 ",\n".join(sorted(k.get_titles()))),
+                # "довгий ящик": lambda: bot.send_message(message.chat.id, "Обирай!",
+                #                                         reply_markup=markups.long_drawer_markup),
                 "easy easy": lambda: bot.send_audio(message.chat.id, audio),
                 "создатєль": lambda: butter(message.chat.id),
                 "постріл": lambda: bot.send_message(message.chat.id, get_random_person()),
@@ -96,7 +116,7 @@ def if_not_standart(message):
     text = message.text.replace(' ', '')
     if '!' in text:
         name = text.translate(str.maketrans('', '', string.punctuation))
-        not_standart = {
+        not_standard = {
             'сер Данило Саловрот': ['сало', 'смалець', 'шмалець'],
             'сер Данило владика Срібного меча': ['срібний', 'срібло', 'монтажор'],
             'сер Іван Доктор Стометрівка': ['ваня', 'йване', 'іван'],
@@ -107,8 +127,8 @@ def if_not_standart(message):
             'сер Олександр Ведмежий Корінь': ['саша', 'саня', 'корінь', 'саньок', 'олександр'],
             'сер Димитрій Техноварвар з Диванії': ['діма', 'дімон', 'дямон', 'техноварвар']
         }
-        for key in not_standart:
-            if name.lower() in not_standart[key]:
+        for key in not_standard:
+            if name.lower() in not_standard[key]:
                 message_text = k.get_person_user_name(key) + ' ' + get_person_status(key) + ' Викликаємо тебе!'
                 bot.send_message(message.chat.id, message_text)
                 return False
@@ -126,52 +146,48 @@ def butter(chat_id):
 
 @bot.message_handler(commands=["start"])
 def handler_start(message):
-    # url = "http://risovach.ru/upload/2014/05/mem/loki_51635217_orig_.jpeg"
-    # urllib2.urlretrieve(url, "{}url_image.jpeg".format(home))
-    # img = open("{}url_image.jpeg".format(home), "rb")
     bot.send_message(message.chat.id, text="В якому ж ти відчаї раз звернувся до мене?",
                      reply_markup=markups.main_markup)
-    # img.close()
 
 
 @bot.message_handler(commands=["stop"])
 def handler_stop(message):
-    hide_markup = telebot.types.ReplyKeyboardRemove()
-    bot.send_message(message.chat.id, "See you in hell!", reply_markup=hide_markup)
+    # hide_markup = telebot.types.ReplyKeyboardRemove()
+    bot.send_message(message.chat.id, "See you in hell!")
 
 
 @bot.message_handler(content_types=["text"])
 @is_standard
 def handler_text(message):
     messages = {
-        "додати послушника": lambda: bot.register_next_step_handler(
-            bot.reply_to(message, "Введіть ім'я цього відчайдухи"), add_person),
-        "Видалити еретика".lower(): lambda: bot.register_next_step_handler(
-            bot.reply_to(message, "Оберіть ім'я цього еретика", reply_markup=markups.get_persons_markup()),
-            del_person),
-        "Надати титул персоні".lower(): lambda: bot.register_next_step_handler(
-            bot.reply_to(message, "Оберіть ім'я цього посвяченого", reply_markup=markups.get_persons_markup()),
-            name_set_title),
-        "Вилучити титул в недостойного".lower(): lambda: bot.register_next_step_handler(
-            bot.reply_to(message, "Оберіть ім'я цього посвяченого", reply_markup=markups.get_persons_markup()),
-            name_set_title),
-        "Змінити званя члена ордену".lower(): lambda: bot.register_next_step_handler(
-            bot.reply_to(message, "Оберіть ім'я цього посвяченого", reply_markup=markups.get_persons_markup()),
-            name_set_title),
-        "Видалити титул зі списку".lower(): lambda: bot.register_next_step_handler(
-            bot.reply_to(message, "Виберіть титул який бажаєте видалити", reply_markup=markups.get_titles_markup()),
-            del_title_in_list),
-        "Додати новий титул".lower(): lambda: bot.register_next_step_handler(
-            bot.reply_to(message, "Введіть новий титул"), new_title),
-        "Наповнити довгий ящик".lower(): lambda: bot.register_next_step_handler(
-            bot.reply_to(message, "Оберіть ім'я користувача", reply_markup=markups.get_persons_markup()),
-            name_set_title),
-        "Показати засекречений матеріал".lower(): lambda: bot.register_next_step_handler(
-            bot.reply_to(message, "Оберіть ім'я користувача", reply_markup=markups.get_persons_markup()),
-            name_set_title),
-        "Видалити давнішню єресть".lower(): lambda: bot.register_next_step_handler(
-            bot.reply_to(message, "Оберіть ім'я користувача", reply_markup=markups.get_persons_markup()),
-            name_set_title),
+        # "додати послушника": lambda: bot.register_next_step_handler(
+        #     bot.reply_to(message, "Введіть ім'я цього відчайдухи"), add_person),
+        # "Видалити еретика".lower(): lambda: bot.register_next_step_handler(
+        #     bot.reply_to(message, "Оберіть ім'я цього еретика", reply_markup=markups.get_persons_markup()),
+        #     del_person),
+        # "Надати титул персоні".lower(): lambda: bot.register_next_step_handler(
+        #     bot.reply_to(message, "Оберіть ім'я цього посвяченого", reply_markup=markups.get_persons_markup()),
+        #     name_set_title),
+        # "Вилучити титул в недостойного".lower(): lambda: bot.register_next_step_handler(
+        #     bot.reply_to(message, "Оберіть ім'я цього посвяченого", reply_markup=markups.get_persons_markup()),
+        #     name_set_title),
+        # "Змінити званя члена ордену".lower(): lambda: bot.register_next_step_handler(
+        #     bot.reply_to(message, "Оберіть ім'я цього посвяченого", reply_markup=markups.get_persons_markup()),
+        #     name_set_title),
+        # "Видалити титул зі списку".lower(): lambda: bot.register_next_step_handler(
+        #     bot.reply_to(message, "Виберіть титул який бажаєте видалити", reply_markup=markups.get_titles_markup()),
+        #     del_title_in_list),
+        # "Додати новий титул".lower(): lambda: bot.register_next_step_handler(
+        #     bot.reply_to(message, "Введіть новий титул"), new_title),
+        # "Наповнити довгий ящик".lower(): lambda: bot.register_next_step_handler(
+        #     bot.reply_to(message, "Оберіть ім'я користувача", reply_markup=markups.get_persons_markup()),
+        #     name_set_title),
+        # "Показати засекречений матеріал".lower(): lambda: bot.register_next_step_handler(
+        #     bot.reply_to(message, "Оберіть ім'я користувача", reply_markup=markups.get_persons_markup()),
+        #     name_set_title),
+        # "Видалити давнішню єресть".lower(): lambda: bot.register_next_step_handler(
+        #     bot.reply_to(message, "Оберіть ім'я користувача", reply_markup=markups.get_persons_markup()),
+        #     name_set_title),
         "music".lower(): lambda: bot.register_next_step_handler(
             bot.reply_to(message, "Введіть назву"),
             get_name_music)
@@ -327,15 +343,18 @@ def add_person(message):
         print(traceback.format_exc())
 
 
-@is_standard
-def del_person(message):
+@bot.callback_query_handler(func=lambda call: call.data in k.get_persons() and user_dict[call.message.chat.id].message[
+    -1] == "Видалити еретика")
+@is_standard_call
+def del_person(call):
     try:
-        if message.text in k.get_persons():
-            k.del_person(message.text)
-            bot.reply_to(message, "Інквізиція успішно виконала свою справу",
-                         reply_markup=markups.get_members_order_markup())
-        else:
-            bot.reply_to(message, "Хм, інквізиція не може його знайти.")
+        # user = user_dict[call.message.chat.id]
+        # print(user.message)
+        # print(user_dict[call.message.chat.id].message[-2] == "Видалити еретика")
+        k.del_person(call.data)
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                              text="Інквізиція успішно виконала свою справу",
+                              reply_markup=markups.get_members_order_markup())
     except Exception as e:
         print(traceback.format_exc())
 
@@ -407,7 +426,9 @@ def del_person_long_drawer(message):
 
 
 @bot.callback_query_handler(func=lambda call: True)
-def standart_callback_data(call):
+@is_standard_call
+def standard_callback_data(call):
+    print(call)
     standard_CD = {
         "члени ордену": lambda: bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                                       text="Обирай!", reply_markup=markups.get_members_order_markup()),
@@ -431,9 +452,55 @@ def standart_callback_data(call):
         "довгий ящик": lambda: bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                                      text="Обирай!",
                                                      reply_markup=markups.long_drawer_markup),
+        "додати послушника": lambda: bot.register_next_step_handler(
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                  text="Введіть ім'я цього відчайдухи"), add_person),
+        "Видалити еретика".lower(): lambda: bot.register_next_step_handler(
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                  text="Оберіть ім'я цього еретика", reply_markup=markups.get_persons_markup()),
+            del_person),
+        "Надати титул персоні".lower(): lambda: bot.register_next_step_handler(
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                  text="Оберіть ім'я цього посвяченого", reply_markup=markups.get_persons_markup()),
+            name_set_title),
+        "Вилучити титул в недостойного".lower(): lambda: bot.register_next_step_handler(
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                  text="Оберіть ім'я цього посвяченого", reply_markup=markups.get_persons_markup()),
+            name_set_title),
+        "Змінити званя члена ордену".lower(): lambda: bot.register_next_step_handler(
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                  text="Оберіть ім'я цього посвяченого", reply_markup=markups.get_persons_markup()),
+            name_set_title),
+        "Видалити титул зі списку".lower(): lambda: bot.register_next_step_handler(
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                  text="Виберіть титул який бажаєте видалити",
+                                  reply_markup=markups.get_titles_markup()),
+            del_title_in_list),
+        "Додати новий титул".lower(): lambda: bot.register_next_step_handler(
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                  text="Введіть новий титул"), new_title),
+        "Наповнити довгий ящик".lower(): lambda: bot.register_next_step_handler(
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                  text="Оберіть ім'я користувача", reply_markup=markups.get_persons_markup()),
+            name_set_title),
+        "Показати засекречений матеріал".lower(): lambda: bot.register_next_step_handler(
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                  text="Оберіть ім'я користувача", reply_markup=markups.get_persons_markup()),
+            name_set_title),
+        "Видалити давнішню єресть".lower(): lambda: bot.register_next_step_handler(
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                  text="Оберіть ім'я користувача", reply_markup=markups.get_persons_markup()),
+            name_set_title),
     }
+
     if call.data.lower() in standard_CD:
         standard_CD[call.data.lower()]()
+
+    elif call.data in k.get_persons():
+        text = get_person_status(call.data)
+        bot.send_message(call.message.chat.id, text)
+    else:
+        pass
 
 
 def main():

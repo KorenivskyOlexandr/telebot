@@ -1,4 +1,3 @@
-import telebot
 import knight as k
 from telebot import types
 
@@ -14,12 +13,12 @@ def get_persons_markup():
 
 
 def get_titles_markup():
-    titles_markup = telebot.types.ReplyKeyboardMarkup(True)
-    for person in k.get_titles():
-        titles_markup.row(person)
-    titles_markup.row('Члени ордену')
-    titles_markup.row('На головну')
-    titles_markup.row('/stop')
+    titles_markup = types.InlineKeyboardMarkup()
+    for title in k.get_titles():
+        titles_markup.add(types.InlineKeyboardButton(title, callback_data=title))
+    titles_markup.add(types.InlineKeyboardButton(text='Члени ордену', callback_data='Члени ордену'))
+    titles_markup.add(types.InlineKeyboardButton(text='На головну', callback_data='На головну'))
+    titles_markup.add(types.InlineKeyboardButton(text='/stop', callback_data='/stop'))
     return titles_markup
 
 
@@ -34,32 +33,32 @@ def get_members_order_markup():
 
 
 def get_person_titles_markup(name):
-    person_titles_markup = telebot.types.ReplyKeyboardMarkup(True, True)
+    person_titles_markup = types.InlineKeyboardMarkup()
     for title in k.get_person_titles(name):
-        person_titles_markup.row(title)
-    person_titles_markup.row('Члени ордену')
-    person_titles_markup.row('На головну')
-    person_titles_markup.row('/stop')
+        person_titles_markup.add(types.InlineKeyboardButton(title, callback_data=title))
+    person_titles_markup.add(types.InlineKeyboardButton(text='Члени ордену', callback_data='Члени ордену'))
+    person_titles_markup.add(types.InlineKeyboardButton(text='На головну', callback_data='На головну'))
+    person_titles_markup.add(types.InlineKeyboardButton(text='/stop', callback_data='/stop'))
     return person_titles_markup
 
 
 def get_person_long_drawer_markup(name):
-    person_long_drawer_markup = telebot.types.ReplyKeyboardMarkup(True, True)
+    person_long_drawer_markup = types.InlineKeyboardMarkup()
     for i in k.get_person_long_drawer_topic(name):
-        person_long_drawer_markup.row(i)
-    person_long_drawer_markup.row('Члени ордену')
-    person_long_drawer_markup.row('На головну')
-    person_long_drawer_markup.row('/stop')
+        person_long_drawer_markup.add(types.InlineKeyboardButton(i, callback_data=i))
+    person_long_drawer_markup.add(types.InlineKeyboardButton(text='Члени ордену', callback_data='Члени ордену'))
+    person_long_drawer_markup.add(types.InlineKeyboardButton(text='На головну', callback_data='На головну'))
+    person_long_drawer_markup.add(types.InlineKeyboardButton(text='/stop', callback_data='/stop'))
     return person_long_drawer_markup
 
 
 def get_PTLDM(name, topic):
-    PTLDM = telebot.types.ReplyKeyboardMarkup(True, True)
+    PTLDM = types.InlineKeyboardMarkup()
     for i in k.get_person_long_drawer(name, topic):
-        PTLDM.row(str(i.message_content.decode('UTF-8')))
-    PTLDM.row('Члени ордену')
-    PTLDM.row('На головну')
-    PTLDM.row('/stop')
+        PTLDM.add(types.InlineKeyboardButton(text=str(i.message_content.decode('UTF-8'))))
+    PTLDM.add(types.InlineKeyboardButton(text='Члени ордену', callback_data='Члени ордену'))
+    PTLDM.add(types.InlineKeyboardButton(text='На головну', callback_data='На головну'))
+    PTLDM.add(types.InlineKeyboardButton(text='/stop', callback_data='/stop'))
     return PTLDM
 
 

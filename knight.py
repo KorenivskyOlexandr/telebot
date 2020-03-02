@@ -135,6 +135,7 @@ def get_person_long_drawer_topic(name):
 def del_person(name):
     try:
         my_cursor.execute("DELETE FROM persons WHERE person = '{}'".format(name))
+        myDB.commit()
     except Exception:
         print(traceback.format_exc())
 
@@ -174,3 +175,9 @@ def replace_rank(name, rank):
                                         """.format(rank, name))
     except Exception:
         print(traceback.format_exc())
+
+
+if __name__ == "__main__":
+    # set_person("TEST")
+    # del_person("TEST")
+    print(get_persons())
