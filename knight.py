@@ -142,7 +142,8 @@ def del_person(name):
 
 def del_title(title_name):
     try:
-        my_cursor.execute("DELETE FROM titles t WHERE t.title = '{}'".format(title_name))
+        my_cursor.execute("DELETE FROM titles  WHERE titles.title = '{}'".format(title_name))
+        myDB.commit()
     except Exception:
         print(traceback.format_exc())
 
@@ -153,26 +154,29 @@ def del_person_title(name, title_name):
                                 WHERE knights.person_id = (SELECT id FROM persons WHERE person='{}')
                                 AND knights.title_id = (SELECT id FROM titles WHERE title='{}')
                                 """.format(name, title_name))
+        myDB.commit()
     except Exception:
         print(traceback.format_exc())
 
 
 def del_person_long_drawer(name, topic, message_id):
     try:
-        my_cursor.execute("""DELETE FROM long_drawer l 
-                                WHERE l.person_id = (SELECT id FROM persons WHERE person='{}')
-                                AND   l.topic = '{}'
-                                AND   l.message_id = {}
+        my_cursor.execute("""DELETE FROM long_drawer 
+                                WHERE long_drawer.person_id = (SELECT id FROM persons WHERE person='{}')
+                                AND   long_drawer.topic = '{}'
+                                AND   long_drawer.message_id = {}
                                 """.format(name, topic, message_id))
+        myDB.commit()
     except Exception:
         print(traceback.format_exc())
 
 
 def replace_rank(name, rank):
     try:
-        my_cursor.execute("""UPDATE persons p SET p.rank_id = (SELECT id FROM titles WHERE title='{}')
-                                        WHERE p.person = '{}'
+        my_cursor.execute("""UPDATE persons SET rank_id = (SELECT id FROM titles WHERE title='{}')
+                                        WHERE person = '{}'
                                         """.format(rank, name))
+        myDB.commit()
     except Exception:
         print(traceback.format_exc())
 

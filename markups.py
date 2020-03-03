@@ -62,7 +62,7 @@ def get_PTLDM(name, topic):
     return PTLDM
 
 
-main_text = ('Члени ордену', 'Титули', 'Довгий ящик', 'Постріл', '/stop')
+main_text = ('Члени ордену', 'Титули', 'Довгий ящик', '/stop')
 main_markup = types.InlineKeyboardMarkup()
 for text in main_text:
     main_markup.add(types.InlineKeyboardButton(text, callback_data=text))
@@ -74,7 +74,7 @@ titles_markup = types.InlineKeyboardMarkup()
 for text in titles_text:
     titles_markup.add(types.InlineKeyboardButton(text, callback_data=text))
 
-standard_text = ('На головну', 'Члени ордену', '/stop')
+standard_text = ('На головну', 'Титули', 'Члени ордену', '/stop')
 standard_markup = types.InlineKeyboardMarkup()
 for text in standard_text:
     standard_markup.add(types.InlineKeyboardButton(text, callback_data=text))
