@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import traceback
-# import collections
 import psycopg2
 
 myDB = psycopg2.connect(
-  database="bot_db",
-  user="telebot",
-  password="adminBot",
-  host="127.0.0.1",
-  port="5432"
+    database="bot_db",
+    user="telebot",
+    password="adminBot",
+    host="127.0.0.1",
+    port="5432"
 )
 my_cursor = myDB.cursor()
 
@@ -48,12 +47,11 @@ def set_person_title(person, title):
     return True
 
 
-# def set_long_drawer(person, topic, message, chat_id):
-#     sql = """INSERT INTO long_drawer (person, topic, message_id, message_content, chat_id)
-#             VALUES ((SELECT id FROM persons WHERE person="{}"), "{}", {}, "{}", {})
-#             """.format(person, topic, message.message_id, message.text, chat_id)
-#     my_cursor.execute(sql)
-#     myDB.commit()
+def set_person_call_name(person, call_name):
+    sql = """INSERT INTO persons_call (person_id, call_name) VALUES ((SELECT id FROM persons WHERE person='{}'), '{}');
+            """.format(person, call_name)
+    my_cursor.execute(sql)
+    myDB.commit()
 
 
 def get_persons():
@@ -108,28 +106,14 @@ def get_person_user_name(name):
     return my_cursor.fetchone()[0]
 
 
-# def get_person_long_drawer(name, topic):
-#     message = collections.namedtuple('message', ['message_id', 'message_content', 'chat_id'])
-#     result = []
-#     my_cursor.execute("""SELECT l.message_id, l.message_content, l.chat_id FROM long_drawer l, persons p
-#                             WHERE l.person = p.id
-#                             and p.person = '{}'
-#                             and l.topic = '{}'
-#         """.format(name, topic))
-#     for i in my_cursor.fetchall():
-#         result.append(message(*i))
-#     return result
-
-
-# def get_person_long_drawer_topic(name):
-#     result = []
-#     my_cursor.execute("""SELECT DISTINCT l.topic FROM long_drawer l, persons p
-#                                     WHERE l.person = p.id
-#                                     and p.person = '{}'
-#                 """.format(name))
-#     for topic in my_cursor.fetchall():
-#         result.append(''.join(topic))
-#     return result
+def get_person_for_call_name(call_name):
+    my_cursor.execute("""SELECT person FROM persons
+    INNER JOIN persons_call ON persons.id = persons_call.person_id and persons_call.call_name = '{}';
+                """.format(call_name))
+    result = my_cursor.fetchall()
+    if len(result) > 0:
+        return result[0][0]
+    return False
 
 
 def del_person(name):
@@ -159,16 +143,13 @@ def del_person_title(name, title_name):
         print(traceback.format_exc())
 
 
-# def del_person_long_drawer(name, topic, message_id):
-#     try:
-#         my_cursor.execute("""DELETE FROM long_drawer
-#                                 WHERE long_drawer.person_id = (SELECT id FROM persons WHERE person='{}')
-#                                 AND   long_drawer.topic = '{}'
-#                                 AND   long_drawer.message_id = {}
-#                                 """.format(name, topic, message_id))
-#         myDB.commit()
-#     except Exception:
-#         print(traceback.format_exc())
+def del_person_call_name(call_name):
+    try:
+        my_cursor.execute("""DELETE FROM persons_call
+                                WHERE persons_call.call_name = '{}'""".format(call_name))
+        myDB.commit()
+    except Exception:
+        print(traceback.format_exc())
 
 
 def replace_rank(name, rank):
@@ -181,7 +162,18 @@ def replace_rank(name, rank):
         print(traceback.format_exc())
 
 
-if __name__ == "__main__":
-    # set_person("TEST")
-    # del_person("TEST")
-    print(get_persons())
+# if __name__ == "__main__":
+# not_standard = {
+#         'сер Данило Саловрот': ['сало', 'смалець', 'шмалець'],
+#         'сер Данило владика Срібного меча': ['срібний', 'срібло', 'монтажор'],
+#         'сер Іван Доктор Стометрівка': ['ваня', 'йване', 'іван'],
+#         'сер Денис Цирюльник': ['дєня', 'денис', 'денчик', 'цирюльник'],
+#         'сер Євген Фирмен': ['жека', 'женя', 'жекіпше', 'фирмен', 'батон'],
+#         'сер Андрій Хмелевовк': ['андрюха', 'вождь', 'бухововк', 'хмелевовк'],
+#         'леді Марі-Вовчиця Шелест Вогню': ['марі', 'марічка'],
+#         'сер Олександр Ведмежий Корінь': ['саша', 'саня', 'корінь', 'саньок', 'олександр'],
+#         'сер Димитрій Техноварвар з Диванії': ['діма', 'дімон', 'дямон', 'техноварвар']
+#     }
+# for person in not_standard:
+#     for call_name in not_standard[person]:
+#         set_person_call_name(person, call_name)
