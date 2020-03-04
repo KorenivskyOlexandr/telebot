@@ -9,6 +9,8 @@ version 1.2 : покращення довгого ящика, та доданн�
 
 version 2.0 : перехід на інлайн клавіші, бд Postgres та маленьки фікси
 
+version 2.1 : допиленя інлайн клавішів, видалення довгого ящика за не надобністю, маленькі фікси
+
 """
 
 import knight as k
@@ -40,73 +42,45 @@ class User:
 
 
 def add_call_history(function):
-    def standard(call):
+    def call_history(call):
         try:
             chat_id = call.message.chat.id
             text = call.data
             name = call.message.from_user.username
-            if chat_id in user_dict:
-                user = user_dict[chat_id]
-                user.message.append(text)
-            else:
-                user = User(name)
-                user.message.append(text)
-                user_dict[chat_id] = user
-            print(user.message)
+            add_user_message(chat_id, text, name)
             return function(call)
         except AttributeError:
             return function(call)
 
-    return standard
+    return call_history
 
 
-def is_standard(function):
-    def standard(message):
+def add_message_history(function):
+    def message_history(message):
         try:
             chat_id = message.chat.id
             text = message.text
             name = message.from_user.username
-            if chat_id in user_dict:
-                user = user_dict[chat_id]
-                user.message.append(text)
-            else:
-                user = User(name)
-                user.message.append(text)
-                user_dict[chat_id] = user
-
-            audio = open("{}tamam_tamam.mp3".format(home), "rb")
-            standard_messages = {
-                "easy easy": lambda: bot.send_audio(message.chat.id, audio),
-                "создатєль": lambda: butter(message.chat.id),
-                "постріл": lambda: bot.send_message(message.chat.id, get_random_person()),
-                "підр": lambda: bot.send_message(message.chat.id, get_random_person_without_name(message)),
-                "курс": lambda: bot.send_message(message.chat.id, get_exchange_rates()),
-                "music": lambda: bot.register_next_step_handler(
-                    bot.reply_to(message, "Введіть назву"),
-                    get_name_music)
-            }
-            if text.lower() in ['підр', 'підар', 'пiдaр', 'пiдap', 'підaр', 'підаp', 'мужеложець', '3.14дар']:
-                text = 'підр'
-            else:
-                if not if_not_standart(message):
-                    pass
-
-            if text.lower() in standard_messages:
-                standard_messages[text.lower()]()
-            elif text in k.get_persons():
-                send_text = get_person_status(text)
-                bot.send_message(message.chat.id, send_text)
-            else:
-                return function(message)
-            audio.close()
-            print(user.message)
+            add_user_message(chat_id, text, name)
+            return function(message)
         except AttributeError:
             return function(message)
 
-    return standard
+    return message_history
 
 
-def if_not_standart(message):
+def add_user_message(chat_id, text, name):
+    if chat_id in user_dict:
+        user = user_dict[chat_id]
+        user.message.append(text)
+    else:
+        user = User(name)
+        user.message.append(text)
+        user_dict[chat_id] = user
+    print(user.message)
+
+
+def if_not_standard(message):
     text = message.text.replace(' ', '')
     if '!' in text:
         name = text.translate(str.maketrans('', '', string.punctuation))
@@ -156,49 +130,31 @@ def handler_stop(message):
 
 
 @bot.message_handler(content_types=["text"])
-@is_standard
+@add_message_history
 def handler_text(message):
-    messages = {
-        # "додати послушника": lambda: bot.register_next_step_handler(
-        #     bot.reply_to(message, "Введіть ім'я цього відчайдухи"), add_person),
-        # "Видалити еретика".lower(): lambda: bot.register_next_step_handler(
-        #     bot.reply_to(message, "Оберіть ім'я цього еретика", reply_markup=markups.get_persons_markup()),
-        #     del_person),
-        # "Надати титул персоні".lower(): lambda: bot.register_next_step_handler(
-        #     bot.reply_to(message, "Оберіть ім'я цього посвяченого", reply_markup=markups.get_persons_markup()),
-        #     name_set_title),
-        # "Вилучити титул в недостойного".lower(): lambda: bot.register_next_step_handler(
-        #     bot.reply_to(message, "Оберіть ім'я цього посвяченого", reply_markup=markups.get_persons_markup()),
-        #     name_set_title),
-        # "Змінити званя члена ордену".lower(): lambda: bot.register_next_step_handler(
-        #     bot.reply_to(message, "Оберіть ім'я цього посвяченого", reply_markup=markups.get_persons_markup()),
-        #     name_set_title),
-        # "Видалити титул зі списку".lower(): lambda: bot.register_next_step_handler(
-        #     bot.reply_to(message, "Виберіть титул який бажаєте видалити", reply_markup=markups.get_titles_markup()),
-        #     del_title_in_list),
-        # "Додати новий титул".lower(): lambda: bot.register_next_step_handler(
-        #     bot.reply_to(message, "Введіть новий титул"), new_title),
-        # "Наповнити довгий ящик".lower(): lambda: bot.register_next_step_handler(
-        #     bot.reply_to(message, "Оберіть ім'я користувача", reply_markup=markups.get_persons_markup()),
-        #     name_set_title),
-        # "Показати засекречений матеріал".lower(): lambda: bot.register_next_step_handler(
-        #     bot.reply_to(message, "Оберіть ім'я користувача", reply_markup=markups.get_persons_markup()),
-        #     name_set_title),
-        # "Видалити давнішню єресть".lower(): lambda: bot.register_next_step_handler(
-        #     bot.reply_to(message, "Оберіть ім'я користувача", reply_markup=markups.get_persons_markup()),
-        #     name_set_title),
-        # "music".lower(): lambda: bot.register_next_step_handler(
-        #     bot.reply_to(message, "Введіть назву"),
-        #     get_name_music)
+    text = message.text
+    audio = open("{}tamam_tamam.mp3".format(home), "rb")
+    standard_messages = {
+        "easy easy": lambda: bot.send_audio(message.chat.id, audio),
+        "создатєль": lambda: butter(message.chat.id),
+        "постріл": lambda: bot.send_message(message.chat.id, get_random_person()),
+        "підр": lambda: bot.send_message(message.chat.id, get_random_person_without_name(message)),
+        "курс": lambda: bot.send_message(message.chat.id, get_exchange_rates()),
+        "music": lambda: bot.register_next_step_handler(
+            bot.reply_to(message, "Введіть назву"),
+            get_name_music)
     }
-    if message.text.lower() in messages:
-        messages[message.text.lower()]()
-
-    elif message.text in k.get_persons():
-        text = get_person_status(message.text)
-        bot.send_message(message.chat.id, text)
+    if text.lower() in ['підр', 'підар', 'пiдaр', 'пiдap', 'підaр', 'підаp', 'мужеложець', '3.14дар']:
+        text = 'підр'
+    if text.lower() in standard_messages:
+        standard_messages[text.lower()]()
+    elif text in k.get_persons():
+        send_text = get_person_status(text)
+        bot.send_message(message.chat.id, send_text)
     else:
-        pass
+        if not if_not_standard(message):
+            pass
+    audio.close()
 
 
 def get_random_person():
@@ -225,7 +181,7 @@ def get_exchange_rates():
     return result
 
 
-@is_standard
+@add_message_history
 def get_name_music(message):
     global y
     y = youtube.YoutubeParser()
@@ -302,7 +258,7 @@ def name_set_title(call):
         return call
 
 
-@is_standard
+@add_message_history
 def new_title(message):
     try:
         k.set_title(message.text)
@@ -368,7 +324,7 @@ def up_rank(call):
                               text="oooops")
 
 
-@is_standard
+@add_message_history
 def add_person(message):
     try:
         k.set_person(message.text)
@@ -419,7 +375,7 @@ def del_person_title(call):
                               text="oooops")
 
 
-@is_standard
+@add_message_history
 def long_drawer(message):
     try:
         user = user_dict[message.chat.id]
@@ -437,7 +393,7 @@ def long_drawer(message):
         print(traceback.format_exc())
 
 
-@is_standard
+@add_message_history
 def add_long_drawer(message):
     try:
         user = user_dict[message.chat.id]
@@ -449,7 +405,7 @@ def add_long_drawer(message):
         bot.reply_to(message, "oooops")
 
 
-@is_standard
+@add_message_history
 def show_long_drawer(message):
     try:
         user = user_dict[message.chat.id]
@@ -462,7 +418,7 @@ def show_long_drawer(message):
         bot.reply_to(message, "oooops")
 
 
-@is_standard
+@add_message_history
 def del_person_long_drawer(message):
     try:
         user = user_dict[message.chat.id]
@@ -553,9 +509,9 @@ def standard_callback_data(call):
 
 def main():
     try:
-        print("БОТ V_2.0 activation")
+        print("БОТ V_2.1 activation")
         bot.polling(none_stop=True, interval=0)
-        print("БОТ V_2.0 зупинився")
+        print("БОТ V_2.1 зупинився")
     except Exception:
         print(traceback.format_exc())
 
