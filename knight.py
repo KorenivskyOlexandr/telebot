@@ -116,6 +116,30 @@ def get_person_for_call_name(call_name):
     return False
 
 
+def get_call_name_for_person(person):
+    my_cursor.execute("""SELECT persons_call.call_name FROM persons
+    INNER JOIN persons_call ON persons.id = persons_call.person_id and person='{}';
+        """.format(person))
+    result = []
+    fetchall = my_cursor.fetchall()
+    for call_name in fetchall:
+        result.append(call_name[0])
+    return result
+
+
+def get_persons_call_name():
+    my_cursor.execute("""SELECT person, persons_call.call_name FROM persons
+    INNER JOIN persons_call ON persons.id = persons_call.person_id;""")
+    fetchall = my_cursor.fetchall()
+    result = {}
+    for person, call_name in fetchall:
+        try:
+            result.update({person: result.get(person) + [call_name]})
+        except TypeError:
+            result.update({person: [call_name]})
+    return result
+
+
 def del_person(name):
     try:
         my_cursor.execute("DELETE FROM persons WHERE person = '{}'".format(name))
@@ -162,7 +186,9 @@ def replace_rank(name, rank):
         print(traceback.format_exc())
 
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
+    # print(get_persons_call_name())
+    print(get_call_name_for_person('сер Олександр Ведмежий Корінь'))
 # not_standard = {
 #         'сер Данило Саловрот': ['сало', 'смалець', 'шмалець'],
 #         'сер Данило владика Срібного меча': ['срібний', 'срібло', 'монтажор'],

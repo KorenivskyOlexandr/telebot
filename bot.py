@@ -181,6 +181,14 @@ def get_exchange_rates():
     return result
 
 
+def show_persons_call_name():
+    persons_call_name = k.get_persons_call_name()
+    result = "Варіанти виклику:\n"
+    for person in persons_call_name:
+        result += "{} : {}.\n".format(person, ', '.join(persons_call_name[person]))
+    return result
+
+
 @add_message_history
 def get_name_music(message):
     global y
@@ -280,11 +288,9 @@ def up_rank(call):
 def add_person(message):
     try:
         k.set_person(message.text)
-        bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id,
-                              text="Ооо, свіже м'ясо", reply_markup=markups.get_members_order_markup())
+        bot.reply_to(message, text="Ооо, свіже м'ясо", reply_markup=markups.get_members_order_markup())
     except Exception as e:
-        bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id,
-                              text="oooops")
+        bot.reply_to(message, text="oooops")
         print(traceback.format_exc())
 
 
@@ -327,58 +333,95 @@ def del_person_title(call):
                               text="oooops")
 
 
-@add_message_history
-def long_drawer(message):
-    try:
-        user = user_dict[message.chat.id]
+# @add_message_history
+# def long_drawer(message):
+#     try:
+#         user = user_dict[message.chat.id]
+#
+#         if user.message[-3] == "Наповнити довгий ящик":
+#             bot.register_next_step_handler(
+#                 bot.reply_to(message, "Вкажіть що ви хочете відправити в далеке забуття з можливістю колись згадати"),
+#                 add_long_drawer)
+#         elif user.message[-3] == "Видалити давнішню єресть":
+#             bot.register_next_step_handler(
+#                 bot.reply_to(message, "Хм.. і що ж ти хочеш спалити?",
+#                              reply_markup=markups.get_PTLDM(user.message[-2], message.text)),
+#                 del_person_long_drawer)
+#     except Exception:
+#         print(traceback.format_exc())
 
-        if user.message[-3] == "Наповнити довгий ящик":
-            bot.register_next_step_handler(
-                bot.reply_to(message, "Вкажіть що ви хочете відправити в далеке забуття з можливістю колись згадати"),
-                add_long_drawer)
-        elif user.message[-3] == "Видалити давнішню єресть":
-            bot.register_next_step_handler(
-                bot.reply_to(message, "Хм.. і що ж ти хочеш спалити?",
-                             reply_markup=markups.get_PTLDM(user.message[-2], message.text)),
-                del_person_long_drawer)
-    except Exception:
-        print(traceback.format_exc())
-
-
-@add_message_history
-def add_long_drawer(message):
-    try:
-        user = user_dict[message.chat.id]
-        k.set_long_drawer(user.message[-3], user.message[-2], message, message.chat.id)
-        bot.reply_to(message, "Довгий ящий став ще довшим", reply_markup=markups.main_markup)
-
-    except Exception:
-        print(traceback.format_exc())
-        bot.reply_to(message, "oooops")
+@bot.callback_query_handler(func=lambda call: call.data in k.get_persons() and user_dict[call.message.chat.id].message[
+    -1] == "Додати виклик члена ордену")
+@add_call_history
+def pre_add_person_call_name(call):
+    msg = bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                text="введіть поганяло для виклику")
+    bot.register_next_step_handler(msg, add_person_call_name)
 
 
 @add_message_history
-def show_long_drawer(message):
-    try:
-        user = user_dict[message.chat.id]
-        messages_id = k.get_person_long_drawer(user.message[-2], message.text)
-        for save_message in messages_id:
-            bot.forward_message(message.chat.id, save_message.chat_id, save_message.message_id)
-        bot.send_message(message.chat.id, "Обирай", reply_markup=markups.main_markup)
-    except Exception:
-        print(traceback.format_exc())
-        bot.reply_to(message, "oooops")
+def add_person_call_name(message):
+    user = user_dict[message.chat.id]
+    person = user.message[-2]
+    k.set_person_call_name(person, message.text)
+    bot.reply_to(message, "Додано, спробуйте викликати його ввівши {}!".format(message.text))
 
 
-@add_message_history
-def del_person_long_drawer(message):
+#########################
+# @bot.callback_query_handler(func=lambda call: call.data in k.get_persons() and user_dict[call.message.chat.id].message[
+#     -1] == "Вилучити титул в недостойного")
+# @add_call_history
+# def pre_del_person_title(call):
+#     bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+#                           text="Оберіть титул",
+#                           reply_markup=markups.get_titles_markup())
+#
+#
+# @bot.callback_query_handler(
+#     func=lambda call: call.data in k.get_titles() and user_dict[call.message.chat.id].message[
+#         -2] == "Вилучити титул в недостойного")
+# @add_call_history
+# def del_person_title(call):
+#     try:
+#         user = user_dict[call.message.chat.id]
+#         k.del_person_title(user.message[-2], call.data)
+#         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+#                               text="Звання вилучено в недостойного!", reply_markup=markups.titles_markup)
+#
+#     except Exception:
+#         print(traceback.format_exc())
+#         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+#                               text="oooops")
+
+# #####################################
+#
+
+
+@bot.callback_query_handler(func=lambda call: call.data in k.get_persons() and user_dict[call.message.chat.id].message[
+    -1] == "Видалити варіант призиву")
+@add_call_history
+def pre_del_person_call_name(call):
+    bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                          text="Оберіть варіант виклику",
+                          reply_markup=markups.get_call_name_for_person(call.data))
+
+
+# @bot.callback_query_handler(
+#     func=lambda call: call.data in k.get_call_name_for_person(user_dict[call.message.chat.id].message[
+#                                                                   -1]) and user_dict[call.message.chat.id].message[
+#                           -2] == "Видалити варіант призиву в члена ордену")
+@add_call_history
+def del_person_call_name(call):
+    print("here", call)
     try:
-        user = user_dict[message.chat.id]
-        k.del_person_long_drawer(user.message[-3], user.message[-2], int(message.text))
-        bot.reply_to(message, "Довгий ящий пустішає", reply_markup=markups.main_markup)
+        k.del_person_call_name(call.data)
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                              text="Виклик вилучено!", reply_markup=markups.standard_markup)
+
     except Exception:
         print(traceback.format_exc())
-        bot.reply_to(message, "oooops")
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                              text="oooops")
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -408,8 +451,10 @@ def standard_callback_data(call):
         "додати послушника": lambda: bot.register_next_step_handler(
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                   text="Введіть ім'я цього відчайдухи"), add_person),
-        "Видалити еретика".lower(): lambda: bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                  text="Оберіть ім'я цього еретика", reply_markup=markups.get_persons_markup()),
+        "Видалити еретика".lower(): lambda: bot.edit_message_text(chat_id=call.message.chat.id,
+                                                                  message_id=call.message.message_id,
+                                                                  text="Оберіть ім'я цього еретика",
+                                                                  reply_markup=markups.get_persons_markup()),
         "Надати титул персоні".lower(): lambda: bot.edit_message_text(chat_id=call.message.chat.id,
                                                                       message_id=call.message.message_id,
                                                                       text="Оберіть ім'я цього посвяченого",
@@ -429,6 +474,19 @@ def standard_callback_data(call):
         "Додати новий титул".lower(): lambda: bot.register_next_step_handler(
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                   text="Введіть новий титул"), new_title),
+        "Додати виклик члена ордену".lower(): lambda: bot.edit_message_text(chat_id=call.message.chat.id,
+                                                                            message_id=call.message.message_id,
+                                                                            text="Оберіть ім'я цього посвяченого",
+                                                                            reply_markup=markups.get_persons_markup()),
+        "Показати варіанти призиву".lower(): lambda: bot.edit_message_text(chat_id=call.message.chat.id,
+                                                                           message_id=call.message.message_id,
+                                                                           text=show_persons_call_name(),
+                                                                           reply_markup=markups.standard_markup),
+        "Видалити варіант призиву".lower(): lambda: bot.edit_message_text(
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            text="Оберіть ім'я цього ноунейма",
+            reply_markup=markups.get_persons_markup()),
     }
 
     if call.data.lower() in standard_CD:
@@ -438,6 +496,9 @@ def standard_callback_data(call):
         text = get_person_status(call.data)
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                               text=text, reply_markup=markups.get_persons_markup())
+    elif user_dict[call.message.chat.id].message[-3] == "Видалити варіант призиву":
+        print("туть")
+        del_person_call_name(call)
     else:
         pass
 
