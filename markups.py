@@ -52,17 +52,7 @@ def get_person_long_drawer_markup(name):
     return person_long_drawer_markup
 
 
-def get_PTLDM(name, topic):
-    PTLDM = types.InlineKeyboardMarkup()
-    for i in k.get_person_long_drawer(name, topic):
-        PTLDM.add(types.InlineKeyboardButton(text=str(i.message_content.decode('UTF-8'))))
-    PTLDM.add(types.InlineKeyboardButton(text='Члени ордену', callback_data='Члени ордену'))
-    PTLDM.add(types.InlineKeyboardButton(text='На головну', callback_data='На головну'))
-    PTLDM.add(types.InlineKeyboardButton(text='/stop', callback_data='/stop'))
-    return PTLDM
-
-
-main_text = ('Члени ордену', 'Титули', 'Довгий ящик', '/stop')
+main_text = ('Члени ордену', 'Титули', '/stop')
 main_markup = types.InlineKeyboardMarkup()
 for text in main_text:
     main_markup.add(types.InlineKeyboardButton(text, callback_data=text))
@@ -79,9 +69,3 @@ standard_markup = types.InlineKeyboardMarkup()
 for text in standard_text:
     standard_markup.add(types.InlineKeyboardButton(text, callback_data=text))
 
-long_drawer_text = (
-    'Наповнити довгий ящик', 'Показати засекречений матеріал', 'Видалити давнішню єресть', 'Видалити давнішню єресть',
-    'На головну', 'Члени ордену', '/stop')
-long_drawer_markup = types.InlineKeyboardMarkup()
-for text in long_drawer_text:
-    long_drawer_markup.add(types.InlineKeyboardButton(text, callback_data=text))

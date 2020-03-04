@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import traceback
-import collections
+# import collections
 import psycopg2
 
 myDB = psycopg2.connect(
@@ -48,12 +48,12 @@ def set_person_title(person, title):
     return True
 
 
-def set_long_drawer(person, topic, message, chat_id):
-    sql = """INSERT INTO long_drawer (person, topic, message_id, message_content, chat_id) 
-            VALUES ((SELECT id FROM persons WHERE person="{}"), "{}", {}, "{}", {})
-            """.format(person, topic, message.message_id, message.text, chat_id)
-    my_cursor.execute(sql)
-    myDB.commit()
+# def set_long_drawer(person, topic, message, chat_id):
+#     sql = """INSERT INTO long_drawer (person, topic, message_id, message_content, chat_id)
+#             VALUES ((SELECT id FROM persons WHERE person="{}"), "{}", {}, "{}", {})
+#             """.format(person, topic, message.message_id, message.text, chat_id)
+#     my_cursor.execute(sql)
+#     myDB.commit()
 
 
 def get_persons():
@@ -108,28 +108,28 @@ def get_person_user_name(name):
     return my_cursor.fetchone()[0]
 
 
-def get_person_long_drawer(name, topic):
-    message = collections.namedtuple('message', ['message_id', 'message_content', 'chat_id'])
-    result = []
-    my_cursor.execute("""SELECT l.message_id, l.message_content, l.chat_id FROM long_drawer l, persons p
-                            WHERE l.person = p.id
-                            and p.person = '{}' 
-                            and l.topic = '{}'
-        """.format(name, topic))
-    for i in my_cursor.fetchall():
-        result.append(message(*i))
-    return result
+# def get_person_long_drawer(name, topic):
+#     message = collections.namedtuple('message', ['message_id', 'message_content', 'chat_id'])
+#     result = []
+#     my_cursor.execute("""SELECT l.message_id, l.message_content, l.chat_id FROM long_drawer l, persons p
+#                             WHERE l.person = p.id
+#                             and p.person = '{}'
+#                             and l.topic = '{}'
+#         """.format(name, topic))
+#     for i in my_cursor.fetchall():
+#         result.append(message(*i))
+#     return result
 
 
-def get_person_long_drawer_topic(name):
-    result = []
-    my_cursor.execute("""SELECT DISTINCT l.topic FROM long_drawer l, persons p
-                                    WHERE l.person = p.id
-                                    and p.person = '{}' 
-                """.format(name))
-    for topic in my_cursor.fetchall():
-        result.append(''.join(topic))
-    return result
+# def get_person_long_drawer_topic(name):
+#     result = []
+#     my_cursor.execute("""SELECT DISTINCT l.topic FROM long_drawer l, persons p
+#                                     WHERE l.person = p.id
+#                                     and p.person = '{}'
+#                 """.format(name))
+#     for topic in my_cursor.fetchall():
+#         result.append(''.join(topic))
+#     return result
 
 
 def del_person(name):
@@ -159,16 +159,16 @@ def del_person_title(name, title_name):
         print(traceback.format_exc())
 
 
-def del_person_long_drawer(name, topic, message_id):
-    try:
-        my_cursor.execute("""DELETE FROM long_drawer 
-                                WHERE long_drawer.person_id = (SELECT id FROM persons WHERE person='{}')
-                                AND   long_drawer.topic = '{}'
-                                AND   long_drawer.message_id = {}
-                                """.format(name, topic, message_id))
-        myDB.commit()
-    except Exception:
-        print(traceback.format_exc())
+# def del_person_long_drawer(name, topic, message_id):
+#     try:
+#         my_cursor.execute("""DELETE FROM long_drawer
+#                                 WHERE long_drawer.person_id = (SELECT id FROM persons WHERE person='{}')
+#                                 AND   long_drawer.topic = '{}'
+#                                 AND   long_drawer.message_id = {}
+#                                 """.format(name, topic, message_id))
+#         myDB.commit()
+#     except Exception:
+#         print(traceback.format_exc())
 
 
 def replace_rank(name, rank):
