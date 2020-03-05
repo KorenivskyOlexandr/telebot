@@ -2,13 +2,17 @@ import knight as k
 from telebot import types
 
 
+def add_standard_markup(inline_markup):
+    for name in ['Члени ордену', 'Титули', 'На головну', '/stop']:
+        inline_markup.add(types.InlineKeyboardButton(text=name, callback_data=name))
+    return inline_markup
+
+
 def get_persons_markup():
     persons_markup = types.InlineKeyboardMarkup()
     for person in k.get_persons():
         persons_markup.add(types.InlineKeyboardButton(person, callback_data=person))
-    persons_markup.add(types.InlineKeyboardButton(text='Члени ордену', callback_data='Члени ордену'))
-    persons_markup.add(types.InlineKeyboardButton(text='На головну', callback_data='На головну'))
-    persons_markup.add(types.InlineKeyboardButton(text='/stop', callback_data='/stop'))
+    persons_markup = add_standard_markup(persons_markup)
     return persons_markup
 
 
@@ -16,10 +20,7 @@ def get_titles_markup():
     titles_markup = types.InlineKeyboardMarkup()
     for title in k.get_titles():
         titles_markup.add(types.InlineKeyboardButton(title, callback_data=title))
-    titles_markup.add(types.InlineKeyboardButton(text='Члени ордену', callback_data='Члени ордену'))
-    titles_markup.add(types.InlineKeyboardButton(text='Титули', callback_data='Титули'))
-    titles_markup.add(types.InlineKeyboardButton(text='На головну', callback_data='На головну'))
-    titles_markup.add(types.InlineKeyboardButton(text='/stop', callback_data='/stop'))
+    titles_markup = add_standard_markup(titles_markup)
     return titles_markup
 
 
@@ -38,10 +39,7 @@ def get_person_titles_markup(name):
     person_titles_markup = types.InlineKeyboardMarkup()
     for title in k.get_person_titles(name):
         person_titles_markup.add(types.InlineKeyboardButton(title, callback_data=title))
-    person_titles_markup.add(types.InlineKeyboardButton(text='Члени ордену', callback_data='Члени ордену'))
-    person_titles_markup.add(types.InlineKeyboardButton(text='Титули', callback_data='Титули'))
-    person_titles_markup.add(types.InlineKeyboardButton(text='На головну', callback_data='На головну'))
-    person_titles_markup.add(types.InlineKeyboardButton(text='/stop', callback_data='/stop'))
+    person_titles_markup = add_standard_markup(person_titles_markup)
     return person_titles_markup
 
 
@@ -49,10 +47,7 @@ def get_call_name_for_person(person):
     call_name_for_person_markup = types.InlineKeyboardMarkup()
     for call_name in k.get_call_name_for_person(person):
         call_name_for_person_markup.add(types.InlineKeyboardButton(call_name, callback_data=call_name))
-    call_name_for_person_markup.add(types.InlineKeyboardButton(text='Члени ордену', callback_data='Члени ордену'))
-    call_name_for_person_markup.add(types.InlineKeyboardButton(text='На головну', callback_data='На головну'))
-    call_name_for_person_markup.add(types.InlineKeyboardButton(text='Титули', callback_data='Титули'))
-    call_name_for_person_markup.add(types.InlineKeyboardButton(text='/stop', callback_data='/stop'))
+    call_name_for_person_markup = add_standard_markup(call_name_for_person_markup)
     return call_name_for_person_markup
 
 

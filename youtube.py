@@ -32,8 +32,3 @@ class YoutubeParser:
     def get_music_href(self, name):
         return self.music_links[name]
 
-
-# if __name__ == '__main__':
-#     Y = YoutubeParser()
-#     Y.get_music_links("tamam tamam")
-#     print(Y.get_music_markups())
