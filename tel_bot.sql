@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 10.10 (Ubuntu 10.10-0ubuntu0.18.04.1)
--- Dumped by pg_dump version 10.10 (Ubuntu 10.10-0ubuntu0.18.04.1)
+-- Dumped from database version 10.12 (Ubuntu 10.12-0ubuntu0.18.04.1)
+-- Dumped by pg_dump version 10.12 (Ubuntu 10.12-0ubuntu0.18.04.1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -70,43 +70,6 @@ ALTER SEQUENCE public.knights_id_seq OWNED BY public.knights.id;
 
 
 --
--- Name: long_drawer; Type: TABLE; Schema: public; Owner: telebot
---
-
-CREATE TABLE public.long_drawer (
-    id integer NOT NULL,
-    person integer NOT NULL,
-    topic character varying NOT NULL,
-    message_id integer NOT NULL,
-    message_content bytea
-);
-
-
-ALTER TABLE public.long_drawer OWNER TO telebot;
-
---
--- Name: long_drawer_id_seq; Type: SEQUENCE; Schema: public; Owner: telebot
---
-
-CREATE SEQUENCE public.long_drawer_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.long_drawer_id_seq OWNER TO telebot;
-
---
--- Name: long_drawer_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: telebot
---
-
-ALTER SEQUENCE public.long_drawer_id_seq OWNED BY public.long_drawer.id;
-
-
---
 -- Name: persons; Type: TABLE; Schema: public; Owner: telebot
 --
 
@@ -120,6 +83,34 @@ CREATE TABLE public.persons (
 
 
 ALTER TABLE public.persons OWNER TO telebot;
+
+--
+-- Name: persons_call_id_seq; Type: SEQUENCE; Schema: public; Owner: telebot
+--
+
+CREATE SEQUENCE public.persons_call_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.persons_call_id_seq OWNER TO telebot;
+
+--
+-- Name: persons_call; Type: TABLE; Schema: public; Owner: telebot
+--
+
+CREATE TABLE public.persons_call (
+    id integer DEFAULT nextval('public.persons_call_id_seq'::regclass) NOT NULL,
+    person_id integer NOT NULL,
+    call_name character varying(255) NOT NULL
+);
+
+
+ALTER TABLE public.persons_call OWNER TO telebot;
 
 --
 -- Name: persons_id_seq; Type: SEQUENCE; Schema: public; Owner: telebot
@@ -185,13 +176,6 @@ ALTER TABLE ONLY public.knights ALTER COLUMN id SET DEFAULT nextval('public.knig
 
 
 --
--- Name: long_drawer id; Type: DEFAULT; Schema: public; Owner: telebot
---
-
-ALTER TABLE ONLY public.long_drawer ALTER COLUMN id SET DEFAULT nextval('public.long_drawer_id_seq'::regclass);
-
-
---
 -- Name: persons id; Type: DEFAULT; Schema: public; Owner: telebot
 --
 
@@ -234,14 +218,6 @@ COPY public.knights (id, person_id, title_id) FROM stdin;
 
 
 --
--- Data for Name: long_drawer; Type: TABLE DATA; Schema: public; Owner: telebot
---
-
-COPY public.long_drawer (id, person, topic, message_id, message_content) FROM stdin;
-\.
-
-
---
 -- Data for Name: persons; Type: TABLE DATA; Schema: public; Owner: telebot
 --
 
@@ -255,6 +231,47 @@ COPY public.persons (id, person, rank_id, user_id, user_name_to_call) FROM stdin
 7	леді Марі-Вовчиця Шелест Вогню	13	575505064	@575505064
 8	сер Денис Цирюльник	6	401928454	@globalus
 9	сер Димитрій Техноварвар з Диванії	13	271837413	@271837413
+\.
+
+
+--
+-- Data for Name: persons_call; Type: TABLE DATA; Schema: public; Owner: telebot
+--
+
+COPY public.persons_call (id, person_id, call_name) FROM stdin;
+38	6	сало
+39	6	смалець
+40	6	шмалець
+41	4	срібний
+42	4	срібло
+43	4	монтажор
+44	5	ваня
+45	5	йване
+46	5	іван
+47	8	дєня
+48	8	денис
+49	8	денчик
+50	8	цирюльник
+51	2	жека
+52	2	женя
+53	2	жекіпше
+54	2	фирмен
+55	2	батон
+56	1	андрюха
+57	1	вождь
+58	1	бухововк
+59	1	хмелевовк
+60	7	марі
+61	7	марічка
+62	3	саша
+63	3	саня
+64	3	корінь
+65	3	саньок
+66	3	олександр
+67	9	діма
+68	9	дімон
+69	9	дямон
+70	9	техноварвар
 \.
 
 
@@ -294,28 +311,28 @@ COPY public.titles (id, title) FROM stdin;
 -- Name: knights_id_seq; Type: SEQUENCE SET; Schema: public; Owner: telebot
 --
 
-SELECT pg_catalog.setval('public.knights_id_seq', 1, false);
+SELECT pg_catalog.setval('public.knights_id_seq', 28, true);
 
 
 --
--- Name: long_drawer_id_seq; Type: SEQUENCE SET; Schema: public; Owner: telebot
+-- Name: persons_call_id_seq; Type: SEQUENCE SET; Schema: public; Owner: telebot
 --
 
-SELECT pg_catalog.setval('public.long_drawer_id_seq', 1, false);
+SELECT pg_catalog.setval('public.persons_call_id_seq', 75, true);
 
 
 --
 -- Name: persons_id_seq; Type: SEQUENCE SET; Schema: public; Owner: telebot
 --
 
-SELECT pg_catalog.setval('public.persons_id_seq', 1, false);
+SELECT pg_catalog.setval('public.persons_id_seq', 28, true);
 
 
 --
 -- Name: titles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: telebot
 --
 
-SELECT pg_catalog.setval('public.titles_id_seq', 1, false);
+SELECT pg_catalog.setval('public.titles_id_seq', 28, true);
 
 
 --
@@ -335,11 +352,19 @@ ALTER TABLE ONLY public.knights
 
 
 --
--- Name: long_drawer long_drawer_pkey; Type: CONSTRAINT; Schema: public; Owner: telebot
+-- Name: persons_call persons_call_person_id_call_name_key; Type: CONSTRAINT; Schema: public; Owner: telebot
 --
 
-ALTER TABLE ONLY public.long_drawer
-    ADD CONSTRAINT long_drawer_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.persons_call
+    ADD CONSTRAINT persons_call_person_id_call_name_key UNIQUE (person_id, call_name);
+
+
+--
+-- Name: persons_call persons_call_pkey; Type: CONSTRAINT; Schema: public; Owner: telebot
+--
+
+ALTER TABLE ONLY public.persons_call
+    ADD CONSTRAINT persons_call_pkey PRIMARY KEY (id);
 
 
 --
@@ -381,11 +406,11 @@ ALTER TABLE ONLY public.knights
 
 
 --
--- Name: long_drawer fk_person_ld; Type: FK CONSTRAINT; Schema: public; Owner: telebot
+-- Name: persons_call fk_person_ld; Type: FK CONSTRAINT; Schema: public; Owner: telebot
 --
 
-ALTER TABLE ONLY public.long_drawer
-    ADD CONSTRAINT fk_person_ld FOREIGN KEY (person) REFERENCES public.persons(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.persons_call
+    ADD CONSTRAINT fk_person_ld FOREIGN KEY (person_id) REFERENCES public.persons(id) ON DELETE CASCADE;
 
 
 --
