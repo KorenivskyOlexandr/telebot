@@ -143,7 +143,7 @@ def handler_text(message):
     elif text in k.get_persons():
         send_text = get_person_status(text)
         bot.send_message(message.chat.id, send_text)
-    elif "random" in text.lower() or "рандом" in text.lower():
+    elif "random" in text.lower() or "рандом" in text.lower() or "roll" in text.lower():
         send_random_number(message)
     else:
         if not if_not_standard(message):
