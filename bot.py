@@ -158,7 +158,10 @@ def get_random_person():
 def send_random_number(message):
     try:
         number = int(message.text.lower().split()[-1])
-        bot.send_message(message.chat.id, str(math.floor(random.random() * number) + 1))
+        if number > 0:
+            bot.send_message(message.chat.id, str(math.floor(random.random() * number) + 1))
+        else:
+            bot.send_message(message.chat.id, "рандом працює тільки з цілими додатніми числами")
     except ValueError:
         pass
 
