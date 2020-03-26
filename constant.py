@@ -1,1 +1,0 @@
-token = "794018685:AAFDLLRjoJq8KZlnYcGWGQ3E-2tlqpnFgDA"   # bot_marafon
