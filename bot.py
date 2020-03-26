@@ -31,10 +31,10 @@ import string
 
 bot = telebot.TeleBot(constant.token)
 user_dict = {}
-# home = '/root/telebot/'
+home = '/home/telebot/LKC_bot/telebot/'
 
 
-home = '/home/alex/PycharmProjects/LKC_bot/telebot/'
+# home = '/home/alex/PycharmProjects/LKC_bot/telebot/'
 
 
 class User:
@@ -79,7 +79,7 @@ def add_user_message(chat_id, text, name):
         user = User(name)
         user.message.append(text)
         user_dict[chat_id] = user
-    print(user.message)
+    # print(user.message)
 
 
 def if_not_standard(message):
@@ -123,7 +123,7 @@ def handler_stop(message):
 @bot.message_handler(content_types=["text"])
 @add_message_history
 def handler_text(message):
-    print(message)
+    # print(message)
     text = message.text
     audio = open("{}tamam_tamam.mp3".format(home), "rb")
     standard_messages = {
@@ -138,11 +138,14 @@ def handler_text(message):
     }
     if text.lower() in ['підр', 'підар', 'пiдaр', 'пiдap', 'підaр', 'підаp', 'мужеложець', '3.14дар']:
         text = 'підр'
-    if text.lower() in standard_messages:
+    elif text.lower() in standard_messages:
         standard_messages[text.lower()]()
     elif text in k.get_persons():
         send_text = get_person_status(text)
         bot.send_message(message.chat.id, send_text)
+    elif "random" in text.lower() or "рандом" in text.lower():
+        number = int(text.lower().split()[-1])
+        bot.send_message(message.chat.id, get_random_number(number))
     else:
         if not if_not_standard(message):
             pass
@@ -151,6 +154,10 @@ def handler_text(message):
 
 def get_random_person():
     return k.get_persons()[math.floor(random.random() * len(k.get_persons()) - 1)]
+
+
+def get_random_number(number):
+    return str(math.floor(random.random() * number) + 1)
 
 
 def get_random_person_without_name(message):
@@ -305,7 +312,7 @@ def del_person_call_name(call):
 @bot.callback_query_handler(func=lambda call: True)
 @add_call_history
 def standard_callback_data(call):
-    print(call)
+    # print(call)
     standard_CD = {
         "члени ордену": lambda: bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                                       text="Обирай!", reply_markup=markups.get_members_order_markup()),
