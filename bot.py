@@ -138,11 +138,14 @@ def handler_text(message):
     }
     if text.lower() in ['підр', 'підар', 'пiдaр', 'пiдap', 'підaр', 'підаp', 'мужеложець', '3.14дар']:
         text = 'підр'
-    if text.lower() in standard_messages:
+    elif text.lower() in standard_messages:
         standard_messages[text.lower()]()
     elif text in k.get_persons():
         send_text = get_person_status(text)
         bot.send_message(message.chat.id, send_text)
+    elif "random" in text.lower() or "рандом" in text.lower():
+        number = int(text.lower().split()[-1])
+        bot.send_message(message.chat.id, get_random_number(number))
     else:
         if not if_not_standard(message):
             pass
@@ -151,6 +154,10 @@ def handler_text(message):
 
 def get_random_person():
     return k.get_persons()[math.floor(random.random() * len(k.get_persons()) - 1)]
+
+
+def get_random_number(number):
+    return str(math.floor(random.random() * number) + 1)
 
 
 def get_random_person_without_name(message):
