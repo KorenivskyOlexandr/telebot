@@ -157,9 +157,16 @@ def get_random_person():
 
 def send_random_number(message):
     try:
-        number = int(message.text.lower().split()[-1])
-        if number > 0:
-            bot.send_message(message.chat.id, str(math.floor(random.random() * number) + 1))
+        second_number = int(message.text.lower().split()[-1])
+        if second_number > 0:
+            if "to" in message.text.lower():
+                firs_number = int(message.text.lower().split()[-3])
+                if firs_number > 0:
+                    bot.send_message(message.chat.id, str(random.randint(firs_number, second_number)))
+                else:
+                    bot.send_message(message.chat.id, "рандом працює тільки з цілими додатніми числами")
+            else:
+                bot.send_message(message.chat.id, str(random.randint(1, second_number)))
         else:
             bot.send_message(message.chat.id, "рандом працює тільки з цілими додатніми числами")
     except ValueError:
