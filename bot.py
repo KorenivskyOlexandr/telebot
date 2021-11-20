@@ -96,7 +96,7 @@ def if_not_standard(message):
 
 
 def butter(chat_id):
-    img = open("{}butter.jpeg".format(home), "rb")
+    img = open("{}/butter.jpeg".format(home), "rb")
     bot.send_message(chat_id, "Для чого я створений?")
     time.sleep(2)
     bot.send_message(chat_id, "щоб носити масло")
@@ -126,7 +126,7 @@ def handler_stop(message):
 def handler_text(message):
     # print(message)
     text = message.text
-    audio = open("{}tamam_tamam.mp3".format(home), "rb")
+    audio = open("{}/tamam_tamam.mp3".format(home), "rb")
     standard_messages = {
         "easy easy": lambda: bot.send_audio(message.chat.id, audio),
         "создатєль": lambda: butter(message.chat.id),
