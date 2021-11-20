@@ -14,6 +14,7 @@ version 2.1 : допиленя інлайн клавішів, видалення
 version 2.2 : Додання методів для створення, видалення викликів юзерів. та інші фікси
 
 """
+import os
 
 import knight as k
 import youtube
@@ -31,10 +32,7 @@ import string
 
 bot = telebot.TeleBot(constant.token)
 user_dict = {}
-home = '/home/telebot/LKC_bot/telebot/'
-
-
-# home = '/home/alex/PycharmProjects/LKC_bot/telebot/'
+home = os.getcwd()
 
 
 class User:
@@ -90,6 +88,9 @@ def if_not_standard(message):
         if person:
             message_text = k.get_person_user_name(person) + ' ' + get_person_status(person) + ' Викликаємо тебе!'
             bot.send_message(message.chat.id, message_text)
+        if name == "all":
+            message_text = "@West_Lion @Sasha_Korenivsky @noctua_rb @AndriySikora @tewtydry @DmitrDX @OscarD @globalus @qu4cken @V_Van_Gogh @575505064 Всі Всі Всі, тут шото хочуть!"
+            bot.send_message(message.chat.id, message_text)
         return False
     return message
 
@@ -138,7 +139,8 @@ def handler_text(message):
     }
     if text.lower() in ['підр', 'підар', 'пiдaр', 'пiдap', 'підaр', 'підаp', 'мужеложець', '3.14дар']:
         text = 'підр'
-    elif text.lower() in standard_messages:
+
+    if text.lower() in standard_messages:
         standard_messages[text.lower()]()
     elif text in k.get_persons():
         send_text = get_person_status(text)
@@ -322,57 +324,56 @@ def del_person_call_name(call):
                               text="oooops")
 
 
-class SecretBasket:
-    def __init__(self):
-        self.secret_basket = []
-
-    def add_person_to_secret_basket(self, person):
-        self.secret_basket.append(person.lower())
-
-    def get_secret_basket_len(self) -> str:
-        return str(len(self.secret_basket))
-
-    def get_random_person_without_yourself(self, person) -> str:
-        if self.secret_basket:
-            if len(self.secret_basket) == 1 and person in self.secret_basket:
-                return "в кошику знаходиться тільки ваше ім'я, але я думаю що краще 'гратися' сам з собою по іншому)"
-            else:
-                name = self.secret_basket[math.floor(random.random() * len(self.secret_basket) - 1)]
-                if person == name:
-                    return self.get_random_person_without_yourself(person)
-                else:
-                    self.secret_basket.remove(name)
-                    return f'Жертва для дарунку - {name}'
-        else:
-            return "Гей, схоже шапка дірява. Бо я не бачу тут жодного імені!"
-
-    def clear_secret_basket(self):
-        self.secret_basket.clear()
-
-
-SECRET_BASKET = SecretBasket()
-
-
-@add_call_history
-def add_person_to_secret_basket(message):
-    SECRET_BASKET.add_person_to_secret_basket(person=message.text.lower())
-    bot.reply_to(message, text="Вітаю, ви віддалися на волю 'рандому')", reply_markup=markups.secret_basket_markup)
+# class SecretBasket:
+#     def __init__(self):
+#         self.secret_basket = []
+#
+#     def add_person_to_secret_basket(self, person):
+#         self.secret_basket.append(person.lower())
+#
+#     def get_secret_basket_len(self) -> str:
+#         return str(len(self.secret_basket))
+#
+#     def get_random_person_without_yourself(self, person) -> str:
+#         if self.secret_basket:
+#             if len(self.secret_basket) == 1 and person in self.secret_basket:
+#                 return "в кошику знаходиться тільки ваше ім'я, але я думаю що краще 'гратися' сам з собою по іншому)"
+#             else:
+#                 name = self.secret_basket[math.floor(random.random() * len(self.secret_basket) - 1)]
+#                 if person == name:
+#                     return self.get_random_person_without_yourself(person)
+#                 else:
+#                     self.secret_basket.remove(name)
+#                     return f'Жертва для дарунку - {name}'
+#         else:
+#             return "Гей, схоже шапка дірява. Бо я не бачу тут жодного імені!"
+#
+#     def clear_secret_basket(self):
+#         self.secret_basket.clear()
+#
+#
+# SECRET_BASKET = SecretBasket()
 
 
-@add_message_history
-def get_person_from_secret_basket(message):
-    bot.reply_to(message, text=SECRET_BASKET.get_random_person_without_yourself(message.text.lower()),
-                 reply_markup=markups.secret_basket_markup)
-
-
-def get_size_secret_basket() -> str:
-    return f'Кількість душ що підписали контракт про нерозголошення : {SECRET_BASKET.get_secret_basket_len()}'
-
-
-def clear_secret_basket() -> str:
-    SECRET_BASKET.clear_secret_basket()
-    return f'Щож всі данні знищено ніхто нікого не знає, ніхто нікого не бачив...'
-
+# @add_call_history
+# def add_person_to_secret_basket(message):
+#     SECRET_BASKET.add_person_to_secret_basket(person=message.text.lower())
+#     bot.reply_to(message, text="Вітаю, ви віддалися на волю 'рандому')", reply_markup=markups.secret_basket_markup)
+#
+#
+# @add_message_history
+# def get_person_from_secret_basket(message):
+#     bot.reply_to(message, text=SECRET_BASKET.get_random_person_without_yourself(message.text.lower()),
+#                  reply_markup=markups.secret_basket_markup)
+#
+#
+# def get_size_secret_basket() -> str:
+#     return f'Кількість душ що підписали контракт про нерозголошення : {SECRET_BASKET.get_secret_basket_len()}'
+#
+#
+# def clear_secret_basket() -> str:
+#     SECRET_BASKET.clear_secret_basket()
+#     return f'Щож всі данні знищено ніхто нікого не знає, ніхто нікого не бачив...'
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -438,25 +439,25 @@ def standard_callback_data(call):
             message_id=call.message.message_id,
             text="Оберіть ім'я цього ноунейма",
             reply_markup=markups.get_persons_markup()),
-        "Таємний санта".lower(): lambda: bot.edit_message_text(chat_id=call.message.chat.id,
-                                                               message_id=call.message.message_id,
-                                                               text="Йо-хо-хо, ну ти й відчайдух, сам вирішив підписатися на цю гру",
-                                                               reply_markup=markups.secret_basket_markup),
-        "Додати себе у капелюх".lower(): lambda: bot.register_next_step_handler(
-            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                  text="Введіть своє ім'я"), add_person_to_secret_basket),
-        "Дістати жертву".lower(): lambda: bot.register_next_step_handler(
-            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                  text="Але спочатку ведіть своє ім'я, яке вказували, щоб випадково не самовипилитися"),
-            get_person_from_secret_basket),
-        "Скіко вже душ зібрано".lower(): lambda: bot.edit_message_text(chat_id=call.message.chat.id,
-                                                                        message_id=call.message.message_id,
-                                                                        text=get_size_secret_basket(),
-                                                                        reply_markup=markups.secret_basket_markup),
-        "Очистити ту драну шапку".lower(): lambda: bot.edit_message_text(chat_id=call.message.chat.id,
-                                                                                   message_id=call.message.message_id,
-                                                                                   text=clear_secret_basket(),
-                                                                                   reply_markup=markups.secret_basket_markup),
+        # "Таємний санта".lower(): lambda: bot.edit_message_text(chat_id=call.message.chat.id,
+        #                                                        message_id=call.message.message_id,
+        #                                                        text="Йо-хо-хо, ну ти й відчайдух, сам вирішив підписатися на цю гру",
+        #                                                        reply_markup=markups.secret_basket_markup),
+        # "Додати себе у капелюх".lower(): lambda: bot.register_next_step_handler(
+        #     bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+        #                           text="Введіть своє ім'я"), add_person_to_secret_basket),
+        # "Дістати жертву".lower(): lambda: bot.register_next_step_handler(
+        #     bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+        #                           text="Але спочатку ведіть своє ім'я, яке вказували, щоб випадково не самовипилитися"),
+        #     get_person_from_secret_basket),
+        # "Скіко вже душ зібрано".lower(): lambda: bot.edit_message_text(chat_id=call.message.chat.id,
+        #                                                                message_id=call.message.message_id,
+        #                                                                text=get_size_secret_basket(),
+        #                                                                reply_markup=markups.secret_basket_markup),
+        # "Очистити ту драну шапку".lower(): lambda: bot.edit_message_text(chat_id=call.message.chat.id,
+        #                                                                  message_id=call.message.message_id,
+        #                                                                  text=clear_secret_basket(),
+        #                                                                  reply_markup=markups.secret_basket_markup),
 
     }
 
