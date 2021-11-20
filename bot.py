@@ -322,6 +322,59 @@ def del_person_call_name(call):
                               text="oooops")
 
 
+class SecretBasket:
+    def __init__(self):
+        self.secret_basket = []
+
+    def add_person_to_secret_basket(self, person):
+        self.secret_basket.append(person.lower())
+
+    def get_secret_basket_len(self) -> str:
+        return str(len(self.secret_basket))
+
+    def get_random_person_without_yourself(self, person) -> str:
+        if self.secret_basket:
+            if len(self.secret_basket) == 1 and person in self.secret_basket:
+                return "в кошику знаходиться тільки ваше ім'я, але я думаю що краще 'гратися' сам з собою по іншому)"
+            else:
+                name = self.secret_basket[math.floor(random.random() * len(self.secret_basket) - 1)]
+                if person == name:
+                    return self.get_random_person_without_yourself(person)
+                else:
+                    self.secret_basket.remove(name)
+                    return f'Жертва для дарунку - {name}'
+        else:
+            return "Гей, схоже шапка дірява. Бо я не бачу тут жодного імені!"
+
+    def clear_secret_basket(self):
+        self.secret_basket.clear()
+
+
+SECRET_BASKET = SecretBasket()
+
+
+@add_call_history
+def add_person_to_secret_basket(message):
+    SECRET_BASKET.add_person_to_secret_basket(person=message.text.lower())
+    bot.reply_to(message, text="Вітаю, ви віддалися на волю 'рандому')", reply_markup=markups.secret_basket_markup)
+
+
+@add_message_history
+def get_person_from_secret_basket(message):
+    bot.reply_to(message, text=SECRET_BASKET.get_random_person_without_yourself(message.text.lower()),
+                 reply_markup=markups.secret_basket_markup)
+
+
+def get_size_secret_basket() -> str:
+    return f'Кількість душ що підписали контракт про нерозголошення : {SECRET_BASKET.get_secret_basket_len()}'
+
+
+def clear_secret_basket() -> str:
+    SECRET_BASKET.clear_secret_basket()
+    return f'Щож всі данні знищено ніхто нікого не знає, ніхто нікого не бачив...'
+
+
+
 @bot.callback_query_handler(func=lambda call: True)
 @add_call_history
 def standard_callback_data(call):
@@ -385,6 +438,26 @@ def standard_callback_data(call):
             message_id=call.message.message_id,
             text="Оберіть ім'я цього ноунейма",
             reply_markup=markups.get_persons_markup()),
+        "Таємний санта".lower(): lambda: bot.edit_message_text(chat_id=call.message.chat.id,
+                                                               message_id=call.message.message_id,
+                                                               text="Йо-хо-хо, ну ти й відчайдух, сам вирішив підписатися на цю гру",
+                                                               reply_markup=markups.secret_basket_markup),
+        "Додати себе у капелюх".lower(): lambda: bot.register_next_step_handler(
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                  text="Введіть своє ім'я"), add_person_to_secret_basket),
+        "Дістати жертву".lower(): lambda: bot.register_next_step_handler(
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                  text="Але спочатку ведіть своє ім'я, яке вказували, щоб випадково не самовипилитися"),
+            get_person_from_secret_basket),
+        "Скіко вже душ зібрано".lower(): lambda: bot.edit_message_text(chat_id=call.message.chat.id,
+                                                                        message_id=call.message.message_id,
+                                                                        text=get_size_secret_basket(),
+                                                                        reply_markup=markups.secret_basket_markup),
+        "Очистити ту драну шапку".lower(): lambda: bot.edit_message_text(chat_id=call.message.chat.id,
+                                                                                   message_id=call.message.message_id,
+                                                                                   text=clear_secret_basket(),
+                                                                                   reply_markup=markups.secret_basket_markup),
+
     }
 
     if call.data.lower() in standard_CD:

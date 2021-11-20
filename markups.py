@@ -51,7 +51,7 @@ def get_call_name_for_person(person):
     return call_name_for_person_markup
 
 
-main_text = ('Члени ордену', 'Титули', '/stop')
+main_text = ('Члени ордену', 'Титули', 'Таємний санта', '/stop')
 main_markup = types.InlineKeyboardMarkup()
 for text in main_text:
     main_markup.add(types.InlineKeyboardButton(text, callback_data=text))
@@ -67,3 +67,12 @@ standard_text = ('На головну', 'Титули', 'Члени ордену
 standard_markup = types.InlineKeyboardMarkup()
 for text in standard_text:
     standard_markup.add(types.InlineKeyboardButton(text, callback_data=text))
+
+secret_basket_text = (
+    'На головну', 'Додати себе у капелюх', 'Дістати жертву',
+    'Скіко вже душ зібрано', 'Очистити ту драну шапку', '/stop')
+secret_basket_markup = types.InlineKeyboardMarkup()
+for text in secret_basket_text:
+    secret_basket_markup.add(types.InlineKeyboardButton(text, callback_data=text))
+
+
